@@ -1530,10 +1530,10 @@
                             class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
                             Admin Dashboard
                         </a>
-                    @elseif (Auth::user()->role === 'user')
-                        <a href="{{ url('/user/dashboard') }}"
+                    @elseif (Auth::user()->role === 'Publisher')
+                        <a href="{{ url('/publisher/dashboard') }}"
                             class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-                            User Dashboard
+                            Publisher Dashboard
                         </a>
                     @else
                         <a href="{{ url('/dashboard') }}"
