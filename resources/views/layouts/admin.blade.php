@@ -12,10 +12,10 @@
 </head>
 
 <body class="sb-nav-fixed">
-    @include('layouts.partials.navbar')
+    @include('layouts.admin_partials.navbar')
     <div id="layoutSidenav">
         <div id="layoutSidenav_nav">
-            @include('layouts.partials.sidebar')
+            @include('layouts.admin_partials.sidebar')
         </div>
         <div id="layoutSidenav_content">
             <main>
@@ -23,7 +23,7 @@
                     @yield('content')
                 </div>
             </main>
-            @include('layouts.partials.footer')
+            @include('layouts.admin_partials.footer')
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
