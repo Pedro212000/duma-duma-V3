@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\emailController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 Route::prefix('admin')->middleware(['auth', 'verified', 'rolemanager:admin.dashboard'])->group(function () {
     Route::resource('user_management', UserController::class);
-
 });
 
 require __DIR__ . '/auth.php';

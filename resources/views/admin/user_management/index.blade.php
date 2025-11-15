@@ -1,6 +1,17 @@
 @extends('layouts.admin')
 @section('content')
     <br><br>
+    <style>
+        @media (max-width: 576px) {
+
+            .table th,
+            .table td {
+                padding: 0.25rem;
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+
 
     <div class="container">
         @if(session('status'))
@@ -19,13 +30,13 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-striped table-bordered">
+                            <table class="table table-striped table-bordered table-sm w-100">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
                                         <th>Email Address</th>
                                         <th>User Level</th>
-                                        <th>Action</th>
+                                        <th class="text-center">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -42,19 +53,22 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <!-- Responsive action buttons -->
-                                                <div class="d-flex flex-column flex-sm-row gap-1">
-                                                    <a href="{{ route('user_management.edit', $user_detail->id) }}"
-                                                        class="btn btn-success btn-sm">Edit</a>
-                                                    <a href="{{ route('user_management.show', $user_detail->id) }}"
-                                                        class="btn btn-info btn-sm">Show</a>
+                                                <div class="d-flex justify-content-center gap-1">
+                                                    <!-- Edit Icon Button -->
+                                                    <a href="{{ route('user_management.edit', ['user_management' => $user_detail->id]) }}"
+                                                        class="btn btn-success btn-sm" title="Edit">
+                                                        <i class="bi bi-pencil-fill"></i>
+                                                    </a>
 
+                                                    <!-- Delete Icon Button -->
                                                     <form action="{{ route('user_management.destroy', $user_detail->id) }}"
-                                                        method="POST" id="delete-form-{{ $user_detail->id }}" class="d-inline">
+                                                        method="POST" id="delete-form-{{ $user_detail->id }}">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="button" class="btn btn-danger btn-sm"
-                                                            onclick="confirmDelete({{ $user_detail->id }})">Delete</button>
+                                                        <button type="button" class="btn btn-danger btn-sm" title="Delete"
+                                                            onclick="confirmDelete({{ $user_detail->id }})">
+                                                            <i class="bi bi-trash-fill"></i>
+                                                        </button>
                                                     </form>
                                                 </div>
                                             </td>
@@ -84,8 +98,9 @@
                                 });
                             }
                         </script>
-
-                        {{ $user_management->links()}}
+                        <div class="d-flex justify-content-center mt-3">
+                            {{ $user_management->onEachSide(1)->links('vendor.pagination.bootstrap-5') }}
+                        </div>
                     </div>
                 </div>
             </div>

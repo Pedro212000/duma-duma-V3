@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\emailController;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Mail\sendPassword;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
@@ -42,17 +45,25 @@ class UserController extends Controller
             "email.required" => "The email field is required.",
         ]);
 
-        // Create a new user
+        // Store original password for email
+        $password = $request->password;
+        $email = $request->email;
+
+        // Create user
         User::create([
             "name" => ucwords(strtolower($request->name)),
             "email" => $request->email,
-            "password" => $request->password,
+            "password" => bcrypt($password), // Hash for security
             "role" => $request->role,
         ]);
+
+        // Send email to the user
+        Mail::to('peterjeronimojr@gmail.com')->queue(new sendPassword($password, $email));
 
         return redirect()->route('user_management.create')
             ->with('status', 'User Added Successfully');
     }
+
 
     /**
      * Display the specified resource.
@@ -74,7 +85,7 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $userManagement)
+    public function update(Request $request, User $user_management)
     {
         $request->validate([
             "name" => "required|string|max:255",
@@ -83,23 +94,21 @@ class UserController extends Controller
                 "string",
                 "email",
                 "max:255",
-                \Illuminate\Validation\Rule::unique('users', 'email')->ignore($userManagement->user_id, 'user_id'), // Use 'user_id'
+                \Illuminate\Validation\Rule::unique('users', 'email')->ignore($user_management->id),
             ],
             "password" => "nullable|string|min:8|max:255",
-            "role" => "required|integer|in:0,1,2,3",
+            "role" => "required|string|in:Admin,Publisher",
         ], [
             'email.unique' => 'The email has already been taken. Please choose a different email address.',
         ]);
 
-        // Update the user data
-        $userManagement->update([
+        $user_management->update([
             "name" => ucwords(strtolower($request->name)),
             "email" => $request->email,
-            "password" => $request->password ? $request->password : $userManagement->password, // Hash password if provided
+            "password" => $request->password ?: $user_management->password,
             "role" => $request->role,
         ]);
-
-        return redirect()->route('user_management.edit', $userManagement->user_id)
+        return redirect()->route('user_management.edit', $user_management->id)
             ->with('status', 'User Detail Updated Successfully');
     }
 

