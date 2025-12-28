@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Admin\PlaceImage;
 use App\Models\Admin\Place;
 use App\Models\Admin\PlaceImages;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PlaceController extends Controller
 {
@@ -35,16 +35,11 @@ class PlaceController extends Controller
         // Map each place to include the first image as a URL
         $places->getCollection()->transform(function ($place) {
             $image = $place->images->first();
-            $imagePath = null;
 
-            if ($image) {
-                $path = $image->image_path;
-                $imagePath = str_starts_with($path, 'http')
-                    ? $path
-                    : asset('storage/' . $path);
-            }
+            $place->image = $image
+                ? '/storage/' . ltrim($image->image_path, '/')
+                : null;
 
-            $place->image = $imagePath; // add a new property for Blade
             return $place;
         });
 
@@ -87,11 +82,11 @@ class PlaceController extends Controller
             'image.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:1024', // 1MB per image
         ]);
         $place = Place::create([
-            'name' => $request->name,
+            'name' => ucwords($request->name),
             'town_name' => $request->town_name,
             'town_code' => $request->town,
             'barangay' => $request->barangay,
-            'description' => $request->description,
+            'description' => ucfirst($request->description),
             'status' => 'Approved'
         ]);
 
@@ -107,6 +102,23 @@ class PlaceController extends Controller
         return redirect()->route('place_management.index')->with('success', 'Place created successfully!');
     }
 
+    public function deleteImage($id)
+    {
+        $image = PlaceImages::findOrFail($id);
+
+        // delete file from storage
+        if (\Storage::disk('public')->exists($image->image_path)) {
+            \Storage::disk('public')->delete($image->image_path);
+        }
+
+        // delete DB record
+        $image->delete();
+
+        return back()->with('status', 'Image deleted successfully');
+    }
+
+
+
     /**
      * Display the specified resource.
      */
@@ -118,24 +130,89 @@ class PlaceController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Place $place_management)
     {
-        //
+        $place_detail = $place_management;
+        return view("admin.place_management.edit", compact('place_detail'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+        $place = Place::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'town' => 'required|string',
+            'town_name' => 'required|string',
+            'barangay' => 'required|string',
+            'description' => 'required|string',
+            'image' => 'nullable|array',
+            'image.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:1024', // 1MB
+        ]);
+
+        // Existing images count
+        $existingImagesCount = $place->images()->count();
+
+        // New images count
+        $newImagesCount = $request->hasFile('image')
+            ? count($request->file('image'))
+            : 0;
+
+        if (($existingImagesCount + $newImagesCount) > 7) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', "Maximum of 7 images allowed. You currently have {$existingImagesCount}.");
+        }
+
+        // Update place details
+        $place->update([
+            'name' => ucwords($request->name),
+            'town_code' => $request->town,
+            'town_name' => $request->town_name,
+            'barangay' => $request->barangay,
+            'description' => ucfirst($request->description),
+        ]);
+
+        // Save new images (if any)
+        if ($request->hasFile('image')) {
+            foreach ($request->file('image') as $image) {
+                $path = $image->store('places', 'public');
+
+                $place->images()->create([
+                    'image_path' => $path
+                ]);
+            }
+        }
+
+        return redirect()
+            ->route('place_management.edit', $place->id)
+            ->with('status', 'Place updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+
+    public function destroy($id)
     {
-        //
+        $place = Place::with('images')->findOrFail($id);
+
+        // Delete image files first
+        foreach ($place->images as $img) {
+            if (Storage::disk('public')->exists($img->image_path)) {
+                Storage::disk('public')->delete($img->image_path);
+            }
+        }
+
+        // Delete place (cascade deletes DB image records)
+        $place->delete();
+
+        return redirect()
+            ->route('place_management.index')
+            ->with('status', 'Place deleted successfully.');
     }
 }

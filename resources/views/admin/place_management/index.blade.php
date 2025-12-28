@@ -27,7 +27,7 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4>Place List
+                        <h4>Place Lists
 
                             <a href="{{url('admin/place_management/create')}}" class="btn btn-primary float-end">Add
                                 Place</a>
@@ -39,7 +39,7 @@
                                 <thead>
                                     <tr>
                                         <th>Place Name</th>
-                                        <th>Location</th>
+                                        <th>Town</th>
                                         <th>Barangay</th>
                                         <th>Description</th>
                                         <th>Images</th>
@@ -64,9 +64,24 @@
                                                     <span class="text-muted">No image</span>
                                                 @endif
                                             </td>
-                                            <td>
-                                                {{-- Action buttons here --}}
+                                            <td class="text-center align-middle">
+                                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                                    <a href="{{ route('place_management.edit', $place['id']) }}"
+                                                        class="btn btn-outline-primary btn-sm" title="Edit">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+
+                                                    <form action="{{ route('place_management.destroy', $place['id']) }}"
+                                                        method="POST" onsubmit="return confirm('Delete this place?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button class="btn btn-outline-danger btn-sm" title="Delete">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </td>
+
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -100,7 +115,6 @@
                             document.addEventListener('DOMContentLoaded', () => {
                                 document.addEventListener('click', async (e) => {
                                     if (!e.target.classList.contains('place-image')) return;
-
                                     const id = e.target.dataset.id;
 
                                     try {
@@ -109,11 +123,30 @@
 
                                         const images = await res.json();
 
-                                        // Fullscreen vertical scrollable container
-                                        let html = '<div style="display:flex;flex-direction:column;gap:10px;overflow-y:auto;max-height:90vh;">';
-
+                                        // Scrollable container with margin
+                                        let html = `
+                                                        <div style="
+                                                            display:flex;
+                                                            flex-direction:column;
+                                                            gap:20px;
+                                                            overflow-y:auto;
+                                                            max-height:calc(100vh - 192px);
+                                                            padding:96px;
+                                                        ">
+                                                    `;
                                         images.forEach(src => {
-                                            html += `<img src="${src}" style="width:100%;height:auto;object-fit:contain;border-radius:6px;">`;
+                                            html += `
+                                                            <img 
+                                                                src="${src}" 
+                                                                style="
+                                                                    max-width:100%;
+                                                                    max-height:calc(100vh - 192px);
+                                                                    object-fit:contain;
+                                                                    border-radius:8px;
+                                                                    margin:auto;
+                                                                "
+                                                            >
+                                                        `;
                                         });
 
                                         html += '</div>';
@@ -129,6 +162,7 @@
                                                 popup: 'swal2-fullscreen-modal'
                                             }
                                         });
+
                                     } catch (err) {
                                         console.error(err);
                                         Swal.fire('Error', 'Could not load images', 'error');
@@ -136,6 +170,7 @@
                                 });
                             });
                         </script>
+
                         <div class="d-flex justify-content-center mt-3">
                         </div>
                     </div>

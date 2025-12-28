@@ -9,17 +9,20 @@
             <div class="sb-sidenav-menu-heading">Interface</div>
             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
                 aria-expanded="false" aria-controls="collapseLayouts">
-                <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                Place
+                <div class="sb-nav-link-icon"><i class="fas fa-box"></i></div> <!-- icon for parent menu -->
+                Products/Places
                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
             </a>
             <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                 <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="{{ route('place_management.index') }}">Place Management</a>
-                    <a class="nav-link" href="layout-sidenav-light.html">Light Sidenav</a>
+                    <a class="nav-link" href="{{ route('place_management.index') }}">
+                        <i class="fas fa-map-marker-alt me-2"></i> Place Management
+                    </a>
+                    <a class="nav-link" href="layout-sidenav-light.html">
+                        <i class="fas fa-box me-2"></i> Product Management
+                    </a>
                 </nav>
             </div>
-
             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages"
                 aria-expanded="false" aria-controls="collapsePages">
                 <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
@@ -69,6 +72,7 @@
     </div>
     <div class="sb-sidenav-footer">
         <div class="small">Logged in as:</div>
-        Start Bootstrap
+        {{ Auth::user()->name }}
     </div>
+
 </nav>

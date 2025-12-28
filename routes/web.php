@@ -34,6 +34,16 @@ Route::prefix('admin')
             'place_management/{place}/images',
             [PlaceController::class, 'images']
         )->name('place_management.images');
+
+        Route::delete(
+            'admin/place_management/image/{id}',
+            [PlaceController::class, 'deleteImage']
+        )->name('place_management.image.delete');
+
+        Route::delete(
+            'admin/place-management/{id}',
+            [PlaceController::class, 'destroy']
+        )->name('place_management.destroy');
     });
 
 
